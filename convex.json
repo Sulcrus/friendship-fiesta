@@ -1,0 +1,6 @@
+{
+  "functions": "convex/",
+  "deployment": {
+    "url": "https://secret-opossum-540.convex.cloud"
+  }
+}

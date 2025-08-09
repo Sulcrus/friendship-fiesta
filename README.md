@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kathmandu Friendship Fiesta - Event Registration Platform
 
-## Getting Started
+A beautiful, modern event registration platform built for the Interact Club's Kathmandu Friendship Fiesta event.
 
-First, run the development server:
+## Features
 
+- **Registration Form**: Google Forms-like interface for easy event registration
+- **Payment Integration**: Support for both cash and QR code payments with QR generation
+- **Admin Dashboard**: Complete admin panel to track and manage all registrations
+- **Event Pass Generation**: Beautiful, downloadable event passes with QR codes
+- **Real-time Database**: Powered by Convex for real-time data sync
+- **Responsive Design**: Clean, minimal design that works on all devices
+
+## Setup Instructions
+
+### 1. Install Dependencies
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Configure Environment Variables
+Create a `.env.local` file in the root directory:
+```
+CONVEX_DEPLOYMENT=secret-opossum-540
+NEXT_PUBLIC_CONVEX_URL=https://secret-opossum-540.convex.cloud
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Run Development Server
+```bash
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 4. Setup Convex (if needed)
+```bash
+npx convex dev
+```
 
-## Learn More
+## Usage
 
-To learn more about Next.js, take a look at the following resources:
+### For Participants
+1. Visit the main page
+2. Fill out the registration form with:
+   - Full name
+   - Home club name
+   - Phone number
+   - Payment method (cash or QR)
+3. If using QR payment, scan the generated QR code and upload payment screenshot
+4. Submit registration and receive your event pass
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### For Administrators
+1. Navigate to `/admin`
+2. View registration statistics
+3. Review and approve/reject pending registrations
+4. Track all participant data
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Technology Stack
 
-## Deploy on Vercel
+- **Frontend**: Next.js 14, React, TypeScript
+- **Styling**: Styled Components
+- **Database**: Convex
+- **QR Generation**: qrcode library
+- **PDF/Image Generation**: html2canvas
+- **File Upload**: React Dropzone
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Project Structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+friendship-fiesta/
+├── app/
+│   ├── components/         # Reusable React components
+│   ├── admin/             # Admin dashboard
+│   ├── globals.css        # Global styles
+│   ├── layout.tsx         # Root layout
+│   └── page.tsx          # Main registration page
+├── convex/
+│   ├── schema.ts         # Database schema
+│   └── registrations.ts  # Database functions
+└── public/               # Static assets
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+## License
+
+This project is built for the Interact Club of Kathmandu Friendship Fiesta event.
