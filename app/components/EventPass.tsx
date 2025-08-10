@@ -180,6 +180,15 @@ const UserName = styled.h2`
   letter-spacing: -0.01em;
 `;
 
+const UserDesignation = styled.p`
+  font-size: 0.95rem;
+  margin: 0 0 6px 0;
+  font-weight: 500;
+  color: #475569;
+  word-break: break-word;
+  line-height: 1.3;
+`;
+
 const UserClub = styled.p`
   font-size: 0.95rem;
   margin: 0;
@@ -255,10 +264,11 @@ const DecorativeLine = styled.div`
 interface EventPassProps {
   name: string;
   homeClub: string;
+  designation: string;
   passId: string;
 }
 
-export default function EventPass({ name, homeClub, passId }: EventPassProps) {
+export default function EventPass({ name, homeClub, designation, passId }: EventPassProps) {
   const passRef = useRef<HTMLDivElement>(null);
   const [qrCode, setQrCode] = useState<string>('');
 
@@ -351,6 +361,7 @@ export default function EventPass({ name, homeClub, passId }: EventPassProps) {
 
           <UserSection>
             <UserName>{name}</UserName>
+            <UserDesignation>{designation}</UserDesignation>
             <UserClub>{homeClub}</UserClub>
           </UserSection>
         </PassBody>
