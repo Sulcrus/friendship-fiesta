@@ -127,17 +127,24 @@ interface SuccessModalProps {
     passId: string;
     name?: string;
     homeClub?: string;
+    designation?: string;
   };
 }
 
 export default function SuccessModal({ isOpen, onClose, registrationData }: SuccessModalProps) {
-  const [registrationDetails, setRegistrationDetails] = useState<any>(null);
+  const [registrationDetails, setRegistrationDetails] = useState<{
+    name: string;
+    homeClub: string;
+    designation: string;
+    passId: string;
+  } | null>(null);
 
   useEffect(() => {
     if (isOpen && registrationData) {
       setRegistrationDetails({
         name: registrationData.name || 'Guest',
         homeClub: registrationData.homeClub || 'Guest Club',
+        designation: registrationData.designation || 'Guest',
         passId: registrationData.passId,
       });
     }
@@ -185,6 +192,7 @@ export default function SuccessModal({ isOpen, onClose, registrationData }: Succ
           <EventPass
             name={registrationDetails.name}
             homeClub={registrationDetails.homeClub}
+            designation={registrationDetails.designation}
             passId={registrationDetails.passId}
           />
         )}

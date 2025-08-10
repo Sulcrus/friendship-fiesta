@@ -4,7 +4,7 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api.js';
-import { Users, CheckCircle, XCircle, Clock, Search, Filter, Lock, Menu, X, Eye } from 'lucide-react';
+import { Users, CheckCircle, XCircle, Clock, Search, Filter, Lock, Menu, X, Eye, Download, FileSpreadsheet } from 'lucide-react';
 
 const AdminContainer = styled.div`
   min-height: 100vh;
@@ -492,6 +492,33 @@ const MobileActionsContainer = styled.div`
   margin-top: 12px;
 `;
 
+const ExportButton = styled.button`
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+`;
+
 export default function AdminPanel() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
@@ -513,6 +540,48 @@ export default function AdminPanel() {
       setError('Invalid password. Please try again.');
       setPassword('');
     }
+  };
+
+  // Excel export function
+  const exportToExcel = () => {
+    const approvedRegistrations = registrations?.filter(reg => reg.status === 'verified') || [];
+    
+    if (approvedRegistrations.length === 0) {
+      alert('No approved registrations to export');
+      return;
+    }
+
+    // Create CSV content
+    const headers = ['Pass ID', 'Name', 'Designation', 'Home Club', 'Phone Number', 'Payment Method', 'Registration Date'];
+    const csvContent = [
+      headers.join(','),
+      ...approvedRegistrations.map(reg => [
+        reg.passId,
+        `"${reg.name}"`,
+        `"${reg.designation}"`,
+        `"${reg.homeClub}"`,
+        reg.phoneNumber,
+        reg.paymentMethod,
+        new Date(reg.createdAt).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+      ].join(','))
+    ].join('\n');
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `approved_registrations_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   if (!isAuthenticated) {
@@ -544,6 +613,7 @@ export default function AdminPanel() {
   const filteredRegistrations = registrations?.filter(reg => {
     const matchesSearch = reg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          reg.homeClub.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         reg.designation.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          reg.passId.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || reg.status === statusFilter;
     return matchesSearch && matchesStatus;
@@ -619,7 +689,7 @@ export default function AdminPanel() {
         <FilterRow>
           <SearchInput
             type="text"
-            placeholder="Search by name, club, or pass ID..."
+            placeholder="Search by name, designation, club, or pass ID..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -632,6 +702,13 @@ export default function AdminPanel() {
             <option value="verified">Verified</option>
             <option value="rejected">Rejected</option>
           </StatusFilter>
+          <ExportButton
+            onClick={exportToExcel}
+            disabled={stats.verified === 0}
+          >
+            <FileSpreadsheet size={18} />
+            Export Approved
+          </ExportButton>
         </FilterRow>
       </FiltersContainer>
 
@@ -651,6 +728,11 @@ export default function AdminPanel() {
                 <MobileCardRow>
                   <MobileCardLabel>Name</MobileCardLabel>
                   <MobileCardValue>{registration.name}</MobileCardValue>
+                </MobileCardRow>
+                
+                <MobileCardRow>
+                  <MobileCardLabel>Designation</MobileCardLabel>
+                  <MobileCardValue>{registration.designation}</MobileCardValue>
                 </MobileCardRow>
                 
                 <MobileCardRow>
@@ -716,6 +798,7 @@ export default function AdminPanel() {
               <TableRow>
                 <TableHeaderCell>Pass ID</TableHeaderCell>
                 <TableHeaderCell>Name</TableHeaderCell>
+                <TableHeaderCell>Designation</TableHeaderCell>
                 <TableHeaderCell>Home Club</TableHeaderCell>
                 <TableHeaderCell>Phone</TableHeaderCell>
                 <TableHeaderCell>Payment</TableHeaderCell>
@@ -732,6 +815,7 @@ export default function AdminPanel() {
                     <PassIdCell>{registration.passId}</PassIdCell>
                   </TableCell>
                   <TableCell>{registration.name}</TableCell>
+                  <TableCell>{registration.designation}</TableCell>
                   <TableCell>{registration.homeClub}</TableCell>
                   <TableCell>{registration.phoneNumber}</TableCell>
                   <TableCell>

@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import { useForm } from 'react-hook-form';
 import { useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api.js';
-import { Upload, CreditCard, DollarSign, QrCode, User, Phone, Building2 } from 'lucide-react';
+import { Upload, CreditCard, DollarSign, QrCode, User, Phone, Building2, Briefcase } from 'lucide-react';
 import QRCode from 'qrcode';
 import FileUpload from './FileUpload';
 import SuccessModal from './SuccessModal';
@@ -24,8 +24,14 @@ const FormContainer = styled.div`
   &::before { display: none; }
 
   @media (max-width: 768px) {
-    padding: 40px 30px;
+    padding: 30px 20px;
     margin: 0 10px;
+    border-radius: 20px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 25px 15px;
+    margin: 0 5px;
   }
 `;
 
@@ -36,10 +42,24 @@ const FormTitle = styled.h2`
   text-align: center;
   margin-bottom: 35px;
   letter-spacing: -0.02em;
+
+  @media (max-width: 768px) {
+    font-size: 1.75rem;
+    margin-bottom: 30px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 1.5rem;
+    margin-bottom: 25px;
+  }
 `;
 
 const FormGroup = styled.div`
   margin-bottom: 18px;
+
+  @media (max-width: 480px) {
+    margin-bottom: 16px;
+  }
 `;
 
 const Label = styled.label`
@@ -48,6 +68,11 @@ const Label = styled.label`
   font-weight: 600;
   color: #111827;
   font-size: 0.95rem;
+
+  @media (max-width: 480px) {
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+  }
 `;
 
 const InputWrap = styled.div`
@@ -58,12 +83,18 @@ const InputWrap = styled.div`
   border-radius: 10px;
   padding: 10px 12px;
   background: #ffffff;
+
+  @media (max-width: 480px) {
+    padding: 8px 10px;
+    gap: 8px;
+  }
 `;
 
 const InputIcon = styled.div`
   color: #6b7280;
   display: flex;
   align-items: center;
+  flex-shrink: 0;
 `;
 
 const Input = styled.input`
@@ -78,6 +109,10 @@ const Input = styled.input`
   &::placeholder {
     color: #9ca3af;
   }
+
+  @media (max-width: 480px) {
+    font-size: 0.95rem;
+  }
 `;
 
 const PaymentSection = styled.div`
@@ -86,6 +121,16 @@ const PaymentSection = styled.div`
   padding: 20px;
   margin: 25px 0;
   background: #ffffff;
+
+  @media (max-width: 768px) {
+    padding: 18px 16px;
+    margin: 20px 0;
+  }
+
+  @media (max-width: 480px) {
+    padding: 16px 14px;
+    margin: 18px 0;
+  }
 `;
 
 const PaymentTitle = styled.h3`
@@ -96,94 +141,141 @@ const PaymentTitle = styled.h3`
   display: flex;
   align-items: center;
   gap: 8px;
+
+  @media (max-width: 480px) {
+    font-size: 1rem;
+    margin-bottom: 12px;
+  }
 `;
 
 const PaymentOptions = styled.div`
   display: flex;
-  gap: 15px;
+  gap: 12px;
   margin-bottom: 20px;
 
   @media (max-width: 480px) {
     flex-direction: column;
+    gap: 8px;
   }
 `;
 
 const PaymentOption = styled.button<{ selected: boolean }>`
   flex: 1;
-  padding: 12px 14px;
-  border: 1px solid ${props => props.selected ? '#111827' : '#e5e7eb'};
-  border-radius: 10px;
-  background: #ffffff;
-  color: ${props => props.selected ? '#111827' : '#374151'};
-  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: border-color .2s ease, box-shadow .2s ease;
+  padding: 12px 16px;
+  border: 2px solid ${props => props.selected ? '#3b82f6' : '#e5e7eb'};
+  border-radius: 10px;
+  background: ${props => props.selected ? '#eff6ff' : '#ffffff'};
+  color: ${props => props.selected ? '#1d4ed8' : '#374151'};
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
 
   &:hover {
-    border-color: #111827;
-    box-shadow: 0 2px 10px rgba(17, 24, 39, 0.06);
+    border-color: ${props => props.selected ? '#3b82f6' : '#d1d5db'};
+    background: ${props => props.selected ? '#eff6ff' : '#f9fafb'};
+  }
+
+  @media (max-width: 480px) {
+    padding: 10px 14px;
+    font-size: 0.9rem;
   }
 `;
 
 const QRCodeContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  padding: 16px;
-  background: #f9fafb;
+  text-align: center;
+  margin: 20px 0;
+  padding: 20px;
+  background: #f8fafc;
   border-radius: 12px;
-  margin-top: 12px;
-  border: 1px solid #e5e7eb;
-`;
+  border: 1px solid #e2e8f0;
 
-const QRCodeImage = styled.img`
-  width: 220px;
-  height: 220px;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  @media (max-width: 480px) {
+    padding: 16px;
+    margin: 16px 0;
+  }
 `;
 
 const AmountText = styled.p`
-  color: #667eea;
-  font-weight: 600;
+  color: #059669;
+  font-weight: 700;
   font-size: 1.1rem;
+  margin-bottom: 15px;
+
+  @media (max-width: 480px) {
+    font-size: 1rem;
+    margin-bottom: 12px;
+  }
+`;
+
+const QRCodeImage = styled.img`
+  width: 200px;
+  height: 200px;
+  margin: 0 auto 15px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+  @media (max-width: 480px) {
+    width: 180px;
+    height: 180px;
+    margin-bottom: 12px;
+  }
 `;
 
 const SubmitButton = styled.button`
   width: 100%;
-  padding: 14px;
-  background: #111827;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  border-radius: 10px;
-  font-size: 1.05rem;
-  font-weight: 700;
-  transition: opacity .2s ease;
-  margin-top: 20px;
+  padding: 16px 24px;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
 
-  &:hover {
-    opacity: 0.92;
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
   }
 
   &:disabled {
-    opacity: 0.6;
+    opacity: 0.7;
     cursor: not-allowed;
+    transform: none;
+  }
+
+  @media (max-width: 768px) {
+    padding: 14px 20px;
+    font-size: 1rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 12px 18px;
+    font-size: 0.95rem;
+    margin-top: 8px;
   }
 `;
 
-const ErrorMessage = styled.p`
-  color: #e74c3c;
+const ErrorMessage = styled.span`
+  color: #dc2626;
   font-size: 0.9rem;
   margin-top: 5px;
+  display: block;
+
+  @media (max-width: 480px) {
+    font-size: 0.85rem;
+  }
 `;
 
 interface FormData {
   name: string;
   homeClub: string;
+  designation: string;
   phoneNumber: string;
 }
 
@@ -197,14 +289,13 @@ export default function RegistrationForm() {
 
   const createRegistration = useMutation(api.registrations.create);
   const generateUploadUrl = useMutation(api.files.generateUploadUrl);
-  const generatePaymentQR = useMutation(api.registrations.generatePaymentQR);
 
   const { register, handleSubmit, watch, formState: { errors } } = useForm<FormData>();
 
   const watchedFields = watch();
 
   const generateQRForPayment = async () => {
-    if (!watchedFields.name || !watchedFields.homeClub || !watchedFields.phoneNumber) {
+    if (!watchedFields.name || !watchedFields.homeClub || !watchedFields.designation || !watchedFields.phoneNumber) {
       return;
     }
 
@@ -249,8 +340,9 @@ export default function RegistrationForm() {
       const result = await createRegistration({
         name: data.name,
         homeClub: data.homeClub,
+        designation: data.designation,
         phoneNumber: data.phoneNumber,
-        paymentMethod: paymentMethod, // Use state value instead of form data
+        paymentMethod: paymentMethod,
         paymentScreenshot: screenshotStorageId as any,
       });
 
@@ -258,6 +350,7 @@ export default function RegistrationForm() {
         ...result,
         name: data.name,
         homeClub: data.homeClub,
+        designation: data.designation,
       });
       setShowSuccess(true);
     } catch (error) {
@@ -307,6 +400,20 @@ export default function RegistrationForm() {
               />
             </InputWrap>
             {errors.homeClub && <ErrorMessage>{errors.homeClub.message}</ErrorMessage>}
+          </FormGroup>
+
+          <FormGroup>
+            <Label htmlFor="designation">Designation *</Label>
+            <InputWrap>
+              <InputIcon><Briefcase size={18} /></InputIcon>
+              <Input
+                id="designation"
+                type="text"
+                placeholder="Enter your designation/role"
+                {...register('designation', { required: 'Designation is required' })}
+              />
+            </InputWrap>
+            {errors.designation && <ErrorMessage>{errors.designation.message}</ErrorMessage>}
           </FormGroup>
 
           <FormGroup>

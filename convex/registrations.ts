@@ -5,6 +5,7 @@ export const create = mutation({
   args: {
     name: v.string(),
     homeClub: v.string(),
+    designation: v.string(),
     phoneNumber: v.string(),
     paymentMethod: v.string(),
     paymentScreenshot: v.optional(v.id("_storage")),

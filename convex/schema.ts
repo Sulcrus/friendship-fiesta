@@ -5,6 +5,7 @@ export default defineSchema({
   registrations: defineTable({
     name: v.string(),
     homeClub: v.string(),
+    designation: v.string(),
     phoneNumber: v.string(),
     paymentMethod: v.string(), // "cash" or "qr"
     paymentScreenshot: v.optional(v.id("_storage")),
