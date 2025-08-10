@@ -302,7 +302,7 @@ export default function RegistrationForm() {
     const payload = {
       eSewa_id: '9813173643',
       name: watchedFields.name,
-      amount: 250,
+      amount: 200,
       purpose: 'Friendship Fiesta 3.0 Registration',
     };
 
@@ -463,7 +463,7 @@ export default function RegistrationForm() {
 
             {paymentMethod === 'qr' && paymentQR && (
               <QRCodeContainer>
-                <AmountText>Registration Fee: NPR 250</AmountText>
+                <AmountText>Registration Fee: NPR 200</AmountText>
                 <QRCodeImage src={paymentQR} alt="Payment QR Code" />
                 <p style={{ color: '#666', fontSize: '0.9rem', textAlign: 'center' }}>
                   Scan this QR code to make payment, then upload your payment screenshot below
