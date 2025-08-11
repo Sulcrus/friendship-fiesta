@@ -531,7 +531,7 @@ export default function AdminPanel() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    const correctPassword = 'dw#!j}U,60AV';
+    const correctPassword = 'Interact@Kathmandu@1995';
     
     if (password === correctPassword) {
       setIsAuthenticated(true);
