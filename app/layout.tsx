@@ -31,7 +31,8 @@ export default function RootLayout({
             color: '#6b7280',
             fontSize: '0.9rem',
           }}>
-            © {new Date().getFullYear()} Interact Club of Kathmandu. All rights reserved.
+            © {new Date().getFullYear()} Interact Club of Kathmandu. All rights reserved. <br />
+               Any kind of issue or query, please contact us at <a href="mailto:aayush.bista@icktm.org">here</a> 
           </footer>
         </ConvexClientProvider>
       </body>

@@ -39,7 +39,6 @@ export default function Header() {
         <Image src="/logo.png" alt="Friendship Fiesta" fill priority sizes="(max-width: 768px) 60vw, 220px" style={{objectFit: 'contain'}} />
       </LogoWrap>
       <Title>Friendship Fiesta 3.0</Title>
-      <Subtitle>Event Registration</Subtitle>
     </HeaderContainer>
   );
 }

@@ -295,13 +295,10 @@ export default function RegistrationForm() {
   const watchedFields = watch();
 
   const generateQRForPayment = async () => {
-    if (!watchedFields.name || !watchedFields.homeClub || !watchedFields.designation || !watchedFields.phoneNumber) {
-      return;
-    }
-
+    // Generate QR code with basic payment info - no need to wait for form completion
     const payload = {
       eSewa_id: '9813173643',
-      name: watchedFields.name,
+      name: watchedFields.name || 'Event Registration',
       amount: 200,
       purpose: 'Friendship Fiesta 3.0 Registration',
     };
