@@ -4,7 +4,7 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api.js';
-import { Users, CheckCircle, XCircle, Clock, Search, Filter, Lock, Menu, X, Eye, Download, FileSpreadsheet } from 'lucide-react';
+import { Users, CheckCircle, XCircle, Clock, Search, Filter, Lock, Menu, X, Eye, Download, FileSpreadsheet, Trash2 } from 'lucide-react';
 
 const AdminContainer = styled.div`
   min-height: 100vh;
@@ -334,7 +334,7 @@ const StatusBadge = styled.span<{ status: string }>`
   }}
 `;
 
-const ActionButton = styled.button<{ variant: 'approve' | 'reject' }>`
+const ActionButton = styled.button<{ variant: 'approve' | 'reject' | 'delete' }>`
   padding: 8px 16px;
   border-radius: 8px;
   font-size: 0.8rem;
@@ -344,10 +344,18 @@ const ActionButton = styled.button<{ variant: 'approve' | 'reject' }>`
   cursor: pointer;
   transition: all 0.3s ease;
   
-  ${props => props.variant === 'approve' 
-    ? 'background: linear-gradient(135deg, #10b981, #059669); color: white;'
-    : 'background: linear-gradient(135deg, #ef4444, #dc2626); color: white;'
-  }
+  ${props => {
+    switch (props.variant) {
+      case 'approve':
+        return 'background: linear-gradient(135deg, #10b981, #059669); color: white;';
+      case 'reject':
+        return 'background: linear-gradient(135deg, #ef4444, #dc2626); color: white;';
+      case 'delete':
+        return 'background: linear-gradient(135deg, #dc2626, #b91c1c); color: white;';
+      default:
+        return 'background: linear-gradient(135deg, #6b7280, #4b5563); color: white;';
+    }
+  }}
 
   &:hover {
     transform: translateY(-2px);
@@ -519,15 +527,95 @@ const ExportButton = styled.button`
   }
 `;
 
+const DeleteConfirmationModal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+`;
+
+const DeleteModalContent = styled.div`
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+`;
+
+const DeleteModalTitle = styled.h3`
+  color: #dc2626;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+`;
+
+const DeleteModalText = styled.p`
+  color: #64748b;
+  margin-bottom: 24px;
+  line-height: 1.5;
+`;
+
+const DeleteModalActions = styled.div`
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+`;
+
+const CancelButton = styled.button`
+  padding: 12px 24px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  background: white;
+  color: #64748b;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+  }
+`;
+
+const ConfirmDeleteButton = styled.button`
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(220, 38, 38, 0.4);
+  }
+`;
+
 export default function AdminPanel() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; registration: any | null }>({
+    isOpen: false,
+    registration: null
+  });
 
   const registrations = useQuery(api.registrations.listWithUrls);
   const updateStatus = useMutation(api.registrations.updateStatus);
+  const deleteRegistration = useMutation(api.registrations.deleteRegistration);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -584,6 +672,42 @@ export default function AdminPanel() {
     document.body.removeChild(link);
   };
 
+  const handleStatusUpdate = async (id: string, newStatus: string) => {
+    try {
+      await updateStatus({ id: id as any, status: newStatus });
+    } catch (error) {
+      console.error('Error updating status:', error);
+    }
+  };
+
+  const handleDelete = async (registration: any) => {
+    try {
+      await deleteRegistration({ id: registration._id as any });
+      setDeleteModal({ isOpen: false, registration: null });
+    } catch (error) {
+      console.error('Error deleting registration:', error);
+      alert('Failed to delete registration. Please try again.');
+    }
+  };
+
+  const openDeleteModal = (registration: any) => {
+    setDeleteModal({ isOpen: true, registration });
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModal({ isOpen: false, registration: null });
+  };
+
+  const formatDate = (timestamp: number) => {
+    return new Date(timestamp).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   if (!isAuthenticated) {
     return (
       <LoginContainer>
@@ -625,24 +749,6 @@ export default function AdminPanel() {
     verified: registrations.filter(r => r.status === 'verified').length,
     rejected: registrations.filter(r => r.status === 'rejected').length,
   } : { total: 0, pending: 0, verified: 0, rejected: 0 };
-
-  const handleStatusUpdate = async (id: string, newStatus: string) => {
-    try {
-      await updateStatus({ id: id as any, status: newStatus });
-    } catch (error) {
-      console.error('Error updating status:', error);
-    }
-  };
-
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
 
   return (
     <AdminContainer>
@@ -770,22 +876,31 @@ export default function AdminPanel() {
                   <MobileCardValue>{formatDate(registration.createdAt)}</MobileCardValue>
                 </MobileCardRow>
                 
-                {registration.status === 'pending' && (
-                  <MobileActionsContainer>
-                    <ActionButton
-                      variant="approve"
-                      onClick={() => handleStatusUpdate(registration._id, 'verified')}
-                    >
-                      Approve
-                    </ActionButton>
-                    <ActionButton
-                      variant="reject"
-                      onClick={() => handleStatusUpdate(registration._id, 'rejected')}
-                    >
-                      Reject
-                    </ActionButton>
-                  </MobileActionsContainer>
-                )}
+                <MobileActionsContainer>
+                  {registration.status === 'pending' && (
+                    <>
+                      <ActionButton
+                        variant="approve"
+                        onClick={() => handleStatusUpdate(registration._id, 'verified')}
+                      >
+                        Approve
+                      </ActionButton>
+                      <ActionButton
+                        variant="reject"
+                        onClick={() => handleStatusUpdate(registration._id, 'rejected')}
+                      >
+                        Reject
+                      </ActionButton>
+                    </>
+                  )}
+                  <ActionButton
+                    variant="delete"
+                    onClick={() => openDeleteModal(registration)}
+                  >
+                    <Trash2 size={14} />
+                    Delete
+                  </ActionButton>
+                </MobileActionsContainer>
               </MobileCardBody>
             </MobileCard>
           ))}
@@ -839,22 +954,31 @@ export default function AdminPanel() {
                   </TableCell>
                   <TableCell>{formatDate(registration.createdAt)}</TableCell>
                   <TableCell>
-                    {registration.status === 'pending' && (
-                      <>
-                        <ActionButton
-                          variant="approve"
-                          onClick={() => handleStatusUpdate(registration._id, 'verified')}
-                        >
-                          Approve
-                        </ActionButton>
-                        <ActionButton
-                          variant="reject"
-                          onClick={() => handleStatusUpdate(registration._id, 'rejected')}
-                        >
-                          Reject
-                        </ActionButton>
-                      </>
-                    )}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      {registration.status === 'pending' && (
+                        <>
+                          <ActionButton
+                            variant="approve"
+                            onClick={() => handleStatusUpdate(registration._id, 'verified')}
+                          >
+                            Approve
+                          </ActionButton>
+                          <ActionButton
+                            variant="reject"
+                            onClick={() => handleStatusUpdate(registration._id, 'rejected')}
+                          >
+                            Reject
+                          </ActionButton>
+                        </>
+                      )}
+                      <ActionButton
+                        variant="delete"
+                        onClick={() => openDeleteModal(registration)}
+                      >
+                        <Trash2 size={14} />
+                        Delete
+                      </ActionButton>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -879,6 +1003,23 @@ export default function AdminPanel() {
             }
           </p>
         </EmptyState>
+      )}
+
+      {deleteModal.isOpen && deleteModal.registration && (
+        <DeleteConfirmationModal onClick={closeDeleteModal}>
+          <DeleteModalContent onClick={(e) => e.stopPropagation()}>
+            <DeleteModalTitle>Confirm Deletion</DeleteModalTitle>
+            <DeleteModalText>
+              Are you sure you want to delete the registration for <strong>{deleteModal.registration.name}</strong> (Pass ID: {deleteModal.registration.passId})? This action cannot be undone.
+            </DeleteModalText>
+            <DeleteModalActions>
+              <CancelButton onClick={closeDeleteModal}>Cancel</CancelButton>
+              <ConfirmDeleteButton onClick={() => handleDelete(deleteModal.registration)}>
+                Delete Registration
+              </ConfirmDeleteButton>
+            </DeleteModalActions>
+          </DeleteModalContent>
+        </DeleteConfirmationModal>
       )}
     </AdminContainer>
   );

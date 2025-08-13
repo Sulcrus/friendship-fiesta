@@ -458,6 +458,22 @@ export default function RegistrationForm() {
               </PaymentOption>
             </PaymentOptions>
 
+            {paymentMethod === 'cash' && (
+              <div style={{ 
+                textAlign: 'center', 
+                margin: '20px 0', 
+                padding: '20px', 
+                background: '#f8fafc', 
+                borderRadius: '12px', 
+                border: '1px solid #e2e8f0' 
+              }}>
+                <AmountText>Registration Fee: NPR 200</AmountText>
+                <p style={{ color: '#666', fontSize: '0.9rem', textAlign: 'center', margin: '0' }}>
+                  Please bring the exact amount to the event venue
+                </p>
+              </div>
+            )}
+
             {paymentMethod === 'qr' && paymentQR && (
               <QRCodeContainer>
                 <AmountText>Registration Fee: NPR 200</AmountText>

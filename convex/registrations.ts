@@ -104,3 +104,16 @@ export const generatePaymentQR = mutation({
     return { qrId, qrData };
   },
 });
+
+export const deleteRegistration = mutation({
+  args: {
+    id: v.id("registrations"),
+  },
+  handler: async (ctx, args) => {
+    // Delete the registration
+    await ctx.db.delete(args.id);
+    
+    // Note: If there are associated files in storage, they would need to be deleted separately
+    // For now, we're just deleting the registration record
+  },
+});
