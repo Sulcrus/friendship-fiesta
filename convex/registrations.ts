@@ -11,6 +11,16 @@ export const create = mutation({
     paymentScreenshot: v.optional(v.id("_storage")),
   },
   handler: async (ctx, args) => {
+    // Check if registrations are closed
+    const setting = await ctx.db
+      .query("settings")
+      .withIndex("by_key", (q) => q.eq("key", "registrationsClosed"))
+      .first();
+    
+    if (setting?.value === true) {
+      throw new Error("Registrations are currently closed. Please try again later.");
+    }
+
     // Generate unique pass ID
     const passId = `FF${Date.now().toString().slice(-6)}${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
     
@@ -115,5 +125,80 @@ export const deleteRegistration = mutation({
     
     // Note: If there are associated files in storage, they would need to be deleted separately
     // For now, we're just deleting the registration record
+  },
+});
+
+export const isRegistrationClosed = query({
+  handler: async (ctx) => {
+    const setting = await ctx.db
+      .query("settings")
+      .withIndex("by_key", (q) => q.eq("key", "registrationsClosed"))
+      .first();
+    
+    return setting?.value === true;
+  },
+});
+
+export const closeRegistrations = mutation({
+  handler: async (ctx) => {
+    // Check if setting already exists
+    const existingSetting = await ctx.db
+      .query("settings")
+      .withIndex("by_key", (q) => q.eq("key", "registrationsClosed"))
+      .first();
+    
+    if (existingSetting) {
+      // Update existing setting
+      await ctx.db.patch(existingSetting._id, {
+        value: true,
+        updatedAt: Date.now(),
+      });
+    } else {
+      // Create new setting
+      await ctx.db.insert("settings", {
+        key: "registrationsClosed",
+        value: true,
+        updatedAt: Date.now(),
+      });
+    }
+  },
+});
+
+export const openRegistrations = mutation({
+  handler: async (ctx) => {
+    // Check if setting already exists
+    const existingSetting = await ctx.db
+      .query("settings")
+      .withIndex("by_key", (q) => q.eq("key", "registrationsClosed"))
+      .first();
+    
+    if (existingSetting) {
+      // Update existing setting
+      await ctx.db.patch(existingSetting._id, {
+        value: false,
+        updatedAt: Date.now(),
+      });
+    } else {
+      // Create new setting
+      await ctx.db.insert("settings", {
+        key: "registrationsClosed",
+        value: false,
+        updatedAt: Date.now(),
+      });
+    }
+  },
+});
+
+export const getRegistrationStatus = query({
+  handler: async (ctx) => {
+    const setting = await ctx.db
+      .query("settings")
+      .withIndex("by_key", (q) => q.eq("key", "registrationsClosed"))
+      .first();
+    
+    return {
+      isClosed: setting?.value === true,
+      lastUpdated: setting?.updatedAt || null,
+    };
   },
 });

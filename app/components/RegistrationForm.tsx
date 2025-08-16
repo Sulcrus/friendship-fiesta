@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import styled from 'styled-components';
 import { useForm } from 'react-hook-form';
-import { useMutation } from 'convex/react';
+import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api.js';
-import { Upload, CreditCard, DollarSign, QrCode, User, Phone, Building2, Briefcase } from 'lucide-react';
+import { Upload, CreditCard, DollarSign, QrCode, User, Phone, Building2, Briefcase, AlertTriangle, CheckCircle } from 'lucide-react';
 import QRCode from 'qrcode';
 import FileUpload from './FileUpload';
 import SuccessModal from './SuccessModal';
@@ -272,6 +272,108 @@ const ErrorMessage = styled.span`
   }
 `;
 
+const ClosureMessage = styled.div`
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 2px solid #f59e0b;
+  border-radius: 25px;
+  padding: 50px;
+  text-align: center;
+  width: 100%;
+  max-width: 550px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(251, 191, 36, 0.1) 100%);
+    z-index: 1;
+  }
+
+  @media (max-width: 768px) {
+    padding: 30px 20px;
+    margin: 0 10px;
+    border-radius: 20px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 25px 15px;
+    margin: 0 5px;
+  }
+`;
+
+const ClosureIcon = styled.div`
+  color: #f59e0b;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  z-index: 2;
+  position: relative;
+`;
+
+const ClosureTitle = styled.h2`
+  color: #92400e;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  letter-spacing: -0.02em;
+  z-index: 2;
+  position: relative;
+
+  @media (max-width: 768px) {
+    font-size: 1.75rem;
+    margin-bottom: 16px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 1.5rem;
+    margin-bottom: 14px;
+  }
+`;
+
+const ClosureText = styled.p`
+  color: #92400e;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 25px;
+  z-index: 2;
+  position: relative;
+
+  @media (max-width: 768px) {
+    font-size: 1rem;
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 0.95rem;
+    margin-bottom: 18px;
+  }
+`;
+
+const ClosureSubtext = styled.p`
+  color: #a16207;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  z-index: 2;
+  position: relative;
+
+  @media (max-width: 480px) {
+    font-size: 0.9rem;
+  }
+`;
+
+const LoadingSpinner = styled.div`
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+
 interface FormData {
   name: string;
   homeClub: string;
@@ -286,9 +388,11 @@ export default function RegistrationForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [registrationResult, setRegistrationResult] = useState<any>(null);
+  const [error, setError] = useState<string>('');
 
   const createRegistration = useMutation(api.registrations.create);
   const generateUploadUrl = useMutation(api.files.generateUploadUrl);
+  const isRegistrationClosed = useQuery(api.registrations.isRegistrationClosed);
 
   const { register, handleSubmit, watch, formState: { errors } } = useForm<FormData>();
 
@@ -321,6 +425,7 @@ export default function RegistrationForm() {
 
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
+    setError('');
     try {
       let screenshotStorageId: string | undefined = undefined;
       if (paymentMethod === 'qr' && paymentScreenshot) {
@@ -350,9 +455,13 @@ export default function RegistrationForm() {
         designation: data.designation,
       });
       setShowSuccess(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Registration failed:', error);
-      alert('Registration failed. Please try again.');
+      if (error.message?.includes('closed')) {
+        setError('Registrations are currently closed. Please try again later.');
+      } else {
+        setError('Registration failed. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -365,10 +474,69 @@ export default function RegistrationForm() {
     }
   };
 
+  // If registrations are closed, show closure message
+  if (isRegistrationClosed === true) {
+    return (
+      <ClosureMessage>
+  <ClosureIcon>
+    <AlertTriangle size={64} />
+  </ClosureIcon>
+  <ClosureTitle>Registration Closed</ClosureTitle>
+  <ClosureText>
+    Friendship Fiesta 3.0 has officially concluded. <br />
+    We sincerely thank you for your enthusiasm and support throughout the event.
+  </ClosureText>
+  <ClosureSubtext>
+    With Warm Regards, <br />
+    IT Team <br />
+    Interact Club of Kathmandu
+  </ClosureSubtext>
+</ClosureMessage>
+    );
+  }
+
+  // Show loading state while checking registration status
+  if (isRegistrationClosed === undefined) {
+    return (
+      <FormContainer>
+        <div style={{ 
+          textAlign: 'center', 
+          padding: '40px 20px',
+          color: '#6b7280'
+        }}>
+          <LoadingSpinner style={{ 
+            width: '40px', 
+            height: '40px', 
+            border: '4px solid #e5e7eb', 
+            borderTop: '4px solid #667eea', 
+            borderRadius: '50%', 
+            margin: '0 auto 20px'
+          }} />
+          <p>Checking registration status...</p>
+        </div>
+      </FormContainer>
+    );
+  }
+
   return (
     <>
       <FormContainer>
         <FormTitle>Event Registration</FormTitle>
+        
+        {error && (
+          <div style={{ 
+            background: '#fef2f2', 
+            border: '1px solid #fecaca', 
+            borderRadius: '8px', 
+            padding: '12px', 
+            marginBottom: '20px',
+            color: '#dc2626',
+            fontSize: '0.9rem',
+            textAlign: 'center'
+          }}>
+            {error}
+          </div>
+        )}
         
         <form onSubmit={handleSubmit(onSubmit)}>
           <FormGroup>

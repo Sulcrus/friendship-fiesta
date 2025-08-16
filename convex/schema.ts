@@ -21,4 +21,11 @@ export default defineSchema({
     amount: v.number(),
     createdAt: v.number(),
   }).index("by_registrationId", ["registrationId"]),
+
+  // Global settings table to control registration status
+  settings: defineTable({
+    key: v.string(),
+    value: v.any(),
+    updatedAt: v.number(),
+  }).index("by_key", ["key"]),
 });
